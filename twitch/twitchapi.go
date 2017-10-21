@@ -68,7 +68,7 @@ func (t *Twitch) RequestChannels(channels []string) (*StreamsResponse, error) {
 		fmt.Println("Error creating request:", err.Error())
 		return nil, err
 	}
-	req.Header.Add("Client-ID", "ybuxw6qtats18jmhzp7e2osmjxy3py")
+	req.Header.Add("Client-ID", t.ClientID)
 
 	res, err := t.client.Do(req)
 	if err != nil {
@@ -104,7 +104,7 @@ func (t *Twitch) GetUserByID(id string) (*UserData, error) {
 		fmt.Println("Error creating request:", err.Error())
 		return nil, err
 	}
-	req.Header.Add("Client-ID", "ybuxw6qtats18jmhzp7e2osmjxy3py")
+	req.Header.Add("Client-ID", t.ClientID)
 
 	res, err := t.client.Do(req)
 	if err != nil {
