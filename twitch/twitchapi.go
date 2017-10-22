@@ -28,6 +28,7 @@ type StreamsResponse struct {
 	Data []*ChannelData `json:"data"`
 }
 
+// UserData holds info about a specific twitch streamer
 type UserData struct {
 	ID              string `json:"id"`
 	Login           string `json:"login"`
@@ -40,10 +41,12 @@ type UserData struct {
 	ViewCount       int    `json:"view_count"`
 }
 
+// UsersResponse is the data structure for the twitch users endpoint
 type UsersResponse struct {
 	Data []*UserData `json:"data"`
 }
 
+// Twitch is the struct that holds the basic info for the package
 type Twitch struct {
 	client   http.Client
 	ClientID string
