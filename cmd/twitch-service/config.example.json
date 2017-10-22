@@ -1,0 +1,5 @@
+{
+    "clientid": "twitch api client id",
+    "apisecret": "password to protect getting a jwt",
+    "signsecret": "secret key to sign jwt"
+}
