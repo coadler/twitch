@@ -173,8 +173,10 @@ func (d *Database) GetUserByID(id string) (userData *UserData, err error) {
 			}
 			return u.Put([]byte(id), raw)
 		})
+		return
 	}
 
+	err = json.Unmarshal(user, userData)
 	return
 }
 
