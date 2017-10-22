@@ -72,8 +72,6 @@ func sendChannelLive(channel *ChannelData) {
 	}
 }
 
-var webhookEndpoint = func(id, token string) string { return "https://discordapp.com/api/v6/webhooks/" + id + "/" + token }
-
 func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData) {
 	data := discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{

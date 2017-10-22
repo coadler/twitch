@@ -3,10 +3,8 @@ package twitch
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -62,75 +60,56 @@ func NewAPI(clientID string) *Twitch {
 
 // RequestChannels requests a list of channels
 func (t *Twitch) RequestChannels(channels []string) (*StreamsResponse, error) {
-	req, err := http.NewRequest(
-		"GET",
-		"https://api.twitch.tv/helix/streams?user_login="+strings.Join(channels, "&user_login="),
-		nil,
-	)
+	channelData := new(StreamsResponse)
+	err := t.request("GET", channelsEndpoint(channels), channelData)
 	if err != nil {
-		fmt.Println("Error creating request:", err.Error())
-		return nil, err
-	}
-	req.Header.Add("Client-ID", t.ClientID)
-
-	res, err := t.client.Do(req)
-	if err != nil {
-		fmt.Println("Error executing request:", err.Error())
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("Error reading body:", err.Error())
 		return nil, err
 	}
 
-	var twitch *StreamsResponse
-	err = json.Unmarshal(body, &twitch)
-	if err != nil {
-		fmt.Println("Error unmarshaling twitch response:", err.Error())
-		return nil, err
-	}
-
-	return twitch, nil
+	return channelData, nil
 }
 
 // GetUserByID polls the twitch api for a user by their id
 func (t *Twitch) GetUserByID(id string) (*UserData, error) {
-	req, err := http.NewRequest(
-		"GET",
-		"https://api.twitch.tv/helix/users?id="+id,
-		nil,
-	)
+	user := new(UsersResponse)
+	err := t.request("GET", userEndpoint(id), user)
 	if err != nil {
-		fmt.Println("Error creating request:", err.Error())
-		return nil, err
-	}
-	req.Header.Add("Client-ID", t.ClientID)
-
-	res, err := t.client.Do(req)
-	if err != nil {
-		fmt.Println("Error executing request:", err.Error())
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("Error reading body:", err.Error())
-		return nil, err
-	}
-
-	var user *UsersResponse
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		fmt.Println("Error unmarshaling twitch response:", err.Error())
 		return nil, err
 	}
 
 	if len(user.Data) < 1 {
 		return nil, errors.New("no data returned")
 	}
+
 	return user.Data[0], nil
+}
+
+func (t *Twitch) request(method, url string, model interface{}) error {
+	req, err := http.NewRequest(
+		method,
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Client-ID", t.ClientID)
+
+	res, err := t.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, &model)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

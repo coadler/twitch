@@ -33,7 +33,6 @@ func init() {
 	if err != nil {
 		panic("update interval is not an int")
 	}
-
 }
 
 func main() {
