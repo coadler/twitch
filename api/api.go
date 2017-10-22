@@ -49,9 +49,9 @@ func (a *API) initAPI() {
 
 	// Routes
 	a.router.GET("/", helloWorld)
-	a.router.POST("/token", getToken)
+	a.router.POST("/v1/token", getToken)
 
-	v1 := a.router.Group("/v1")
+	v1 := a.router.Group("/v1/api")
 	config := middleware.JWTConfig{
 		Claims:     &jwtCustomClaims{},
 		SigningKey: []byte(signingsecret),
@@ -59,3 +59,15 @@ func (a *API) initAPI() {
 	v1.Use(middleware.JWTWithConfig(config))
 	//v1.
 }
+
+// tentative routes
+
+// 						UNAUTHENTICATED
+// GET 	/ 										- hello world
+// GET 	/v1/token 								- get jwt for auth
+
+//						 AUTHENTICATED
+// GET 	/v1/api 								- check jwt validity
+// GET 	/v1/api/webhooks/:channelid				- returns a list of webhooks for a specific channel
+// POST /v1/api/webhooks/:channelid/:twitchname	- make a new webhook
+// DEL 	/v1/api/webhooks/:channelid/:twitchname	- delete a webhook

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/iopred/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 var db *Database
@@ -19,6 +19,7 @@ func (t *Twitch) Open(twitchdb *Database, interval int64) {
 	db = twitchdb
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 
+	t.CheckForUpdates()
 	for {
 		select {
 		case <-ticker.C:
@@ -32,6 +33,7 @@ func (t *Twitch) CheckForUpdates() {
 	channels, err := db.GetTwitchChannels()
 	if err != nil {
 		fmt.Println("Error getting channels", err.Error())
+		return
 	}
 
 	if len(channels) < 100 {

@@ -31,7 +31,6 @@ func getToken(c echo.Context) error {
 	}
 
 	if r.Secret == apisecret {
-
 		// Set custom claims
 		claims := &jwtCustomClaims{
 			r.Name,
