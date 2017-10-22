@@ -14,9 +14,9 @@ var db *Database
 var client = http.Client{}
 
 // Open ...
-func (t *Twitch) Open(twitchdb *Database) {
+func (t *Twitch) Open(twitchdb *Database, interval int64) {
 	db = twitchdb
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 
 	for {
 		select {

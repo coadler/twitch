@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ThyLeader/twitch-service/api"
 	"github.com/ThyLeader/twitch-service/twitch"
@@ -9,9 +10,10 @@ import (
 )
 
 var (
-	clientid   string
-	apisecret  string
-	signsecret string
+	clientid       string
+	apisecret      string
+	signsecret     string
+	updateinterval int64
 )
 
 func init() {
@@ -23,9 +25,15 @@ func init() {
 		panic(fmt.Sprintf("error reading in config file: %s \n", err))
 	}
 
-	clientid = viper.GetString("clientid")
-	apisecret = viper.GetString("apisecret")
-	signsecret = viper.GetString("signsecret")
+	clientid = viper.GetString("client-id")
+	apisecret = viper.GetString("api-secret")
+	signsecret = viper.GetString("sign-secret")
+	i := viper.GetString("update-interval")
+	updateinterval, err = strconv.ParseInt(i, 10, 64)
+	if err != nil {
+		panic("update interval is not an int")
+	}
+
 }
 
 func main() {
@@ -38,5 +46,5 @@ func main() {
 
 	twitchapi := twitch.NewAPI(clientid)
 	db := twitch.NewDB(twitchapi)
-	twitchapi.Open(db)
+	twitchapi.Open(db, updateinterval)
 }

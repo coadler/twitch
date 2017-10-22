@@ -1,5 +1,6 @@
 {
-    "clientid": "twitch api client id",
-    "apisecret": "password to protect getting a jwt",
-    "signsecret": "secret key to sign jwt"
+    "client-id": "twitch api client id",
+    "api-secret": "password to protect getting a jwt",
+    "sign-secret": "secret key to sign jwt",
+    "update-interval": "interval to check for updates in seconds"
 }
