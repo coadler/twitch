@@ -15,6 +15,7 @@ var client = http.Client{}
 
 // Open ...
 func (t *Twitch) Open(twitchdb *Database, interval int64) {
+	fmt.Println("open")
 	db = twitchdb
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 

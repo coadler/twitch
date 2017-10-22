@@ -31,7 +31,7 @@ func init() {
 	i := viper.GetString("update-interval")
 	updateinterval, err = strconv.ParseInt(i, 10, 64)
 	if err != nil {
-		panic("update interval is not an int")
+		panic(err.Error())
 	}
 }
 
@@ -41,7 +41,7 @@ func main() {
 		APISecret:  apisecret,
 	}
 	restapi := api.New(apiconfig)
-	restapi.Start(":1323")
+	go restapi.Start(":1323")
 
 	twitchapi := twitch.NewAPI(clientid)
 	db := twitch.NewDB(twitchapi)

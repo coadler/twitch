@@ -12,14 +12,6 @@ import (
 // Database is the struct for holding the main database and the two buckets
 type Database struct {
 	db *bolt.DB
-
-	// bucket for holding the list of twitch names
-	// we need to check for updates on
-	twitch *bolt.Bucket
-
-	// bucket for holding the discord webhooks
-	// for each twitch channel
-	discord *bolt.Bucket
 }
 
 // Webhook stores the data of a single webhook
@@ -62,57 +54,82 @@ func NewDB(t *Twitch) *Database {
 
 // AddChannel adds a twitch channel to motitor and adds the channelID + webhook to be notified
 func (d *Database) AddChannel(twitchName, channelID string, hook Webhook) (err error) {
-	// add the twitch channel name to the twitch bucket so we know to ask for updates for it
-	err = d.twitch.Put([]byte(twitchName), []byte("0"))
-	if err != nil {
-		return
-	}
-
-	// get/make the bucket that holds all the channels receiving updates for a twitch channel
-	b, err := d.discord.CreateBucketIfNotExists([]byte(twitchName))
+	err = d.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("twitch-channels"))
+		// add the twitch channel name to the twitch bucket so we know to ask for updates for it
+		return b.Put([]byte(twitchName), []byte(""))
+	})
 	if err != nil {
 		return
 	}
 
 	// marshal the webhook so it can be saved in the bucket
-	hookMarshaled, err := json.Marshal(hook)
+	raw, err := json.Marshal(hook)
 	if err != nil {
 		return
 	}
 
-	// put the webhook data in the bucket
-	err = b.Put([]byte(channelID), hookMarshaled)
+	err = d.db.Update(func(tx *bolt.Tx) error {
+		// get/make the bucket that holds all the channels receiving updates for a twitch channel
+		b, err := tx.CreateBucketIfNotExists([]byte("discord-channels"))
+		if err != nil {
+			return err
+		}
+		// put the webhook data in the bucket
+		return b.Put([]byte(channelID), raw)
+	})
+
 	return
 }
 
 // GetTwitchChannels returns all the twitch channels being tracked
 func (d *Database) GetTwitchChannels() (channels []string, err error) {
-	err = d.twitch.ForEach(func(k, v []byte) error {
-		channels = append(channels, string(k))
+	err = d.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("twitch-channels"))
+		b.ForEach(func(k, v []byte) error {
+			channels = append(channels, string(k))
+			return nil
+		})
 		return nil
 	})
+
 	return
 }
 
 // GetWebhooks returns a slice of all the webhooks for a twitch channel
 func (d *Database) GetWebhooks(twitchName string) (hooks []*Webhook, err error) {
-	// get bucket containing all the webhooks for a twitch channel
-	b, err := d.discord.CreateBucketIfNotExists([]byte(twitchName))
-	if err != nil {
+	var w *Webhook
+	var makeBucket bool
+
+	err = d.db.View(func(tx *bolt.Tx) error {
+		// get bucket containing all the webhooks for a twitch channel
+		b := tx.Bucket([]byte("discord-channels"))
+		if h := b.Bucket([]byte(twitchName)); h != nil {
+			// iterate over all the keys stored in the bucket, and append
+			// to a slice of webhooks to be returned
+			err = b.ForEach(func(k, v []byte) error {
+				// parse json byte slice -> webhook struct
+				err = json.Unmarshal(v, &w)
+				if err != nil {
+					return err
+				}
+				hooks = append(hooks, w)
+				return nil
+			})
+		} else {
+			makeBucket = true
+		}
+		return nil
+	})
+	// return if the bucket wasn't nil
+	if !makeBucket || err != nil {
 		return
 	}
 
-	var w *Webhook
-	// iterate over all the keys stored in the bucket, and append
-	// to a slice of webhooks to be returned
-	err = b.ForEach(func(k, v []byte) error {
-		// parse json byte slice -> webhook struct
-		err = json.Unmarshal(v, &w)
-		if err != nil {
-			return err
-		}
-		hooks = append(hooks, w)
-		return nil
+	err = d.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("discord-channels"))
+		_, err = b.CreateBucketIfNotExists([]byte(twitchName))
+		return err
 	})
 
 	return
@@ -121,35 +138,44 @@ func (d *Database) GetWebhooks(twitchName string) (hooks []*Webhook, err error) 
 // GetUserByID returns a twitch user by their id
 // it tries to see if the user is cached and if
 // not calls the twitch api and caches response
-func (d *Database) GetUserByID(id string) (*UserData, error) {
-	b, err := d.twitch.CreateBucketIfNotExists([]byte("user-data"))
+func (d *Database) GetUserByID(id string) (userData *UserData, err error) {
+	var user []byte
+	err = d.db.View(func(tx *bolt.Tx) error {
+		// guaranteed to exist
+		twitchBucket := tx.Bucket([]byte("twitch-channels"))
+		// not guaranteed
+		if userBucket := twitchBucket.Bucket([]byte("user-data")); userBucket != nil {
+			copy(user, userBucket.Get([]byte(id)))
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	u := b.Get([]byte(id))
-	if u == nil || len(u) < 1 {
-		userdata, err := twitchapi.GetUserByID(id)
+	if user == nil {
+		userData, err = twitchapi.GetUserByID(id)
 		if err != nil {
-			return nil, err
+			return
 		}
 
-		marshaled, err := json.Marshal(userdata)
+		var raw []byte
+		raw, err = json.Marshal(userData)
 		if err != nil {
-			return nil, err
+			return
 		}
-		b.Put([]byte(id), marshaled)
 
-		return userdata, nil
+		err = d.db.Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("twitch-channels"))
+			u, err := b.CreateBucketIfNotExists([]byte("user-data"))
+			if err != nil {
+				return err
+			}
+			return u.Put([]byte(id), raw)
+		})
 	}
 
-	var userdata *UserData
-	err = json.Unmarshal(u, &userdata)
-	if err != nil {
-		return nil, err
-	}
-
-	return userdata, nil
+	return
 }
 
 // Close closes the current databse
@@ -160,11 +186,11 @@ func (d *Database) Close() {
 func (d *Database) init() error {
 	return d.db.Update(func(tx *bolt.Tx) error {
 		var err error
-		d.twitch, err = tx.CreateBucketIfNotExists([]byte("twitch-channels"))
+		_, err = tx.CreateBucketIfNotExists([]byte("twitch-channels"))
 		if err != nil {
 			return fmt.Errorf("create bucket: %s", err)
 		}
-		d.discord, err = tx.CreateBucketIfNotExists([]byte("discord-channels"))
+		_, err = tx.CreateBucketIfNotExists([]byte("discord-channels"))
 		if err != nil {
 			return fmt.Errorf("create bucket: %s", err)
 		}
