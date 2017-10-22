@@ -24,3 +24,4 @@ _testmain.go
 *.prof
 
 cmd/twitch-service/config.json
+cmd/twitch-service/twitch-service
