@@ -1,6 +1,6 @@
             +----------------------------------------------------------------+
             |                                                                |                      we use a map here since map lookups
-            |                                                                |                           are faster than arrays
+            |                                                                |                            are faster than arrays
             |                    +----------------------+      +-------------+-----------------+        +-------------------------+
             |                    |       Bucket         |      |           Bucket              |        |  {                      |
      +------+------+             |   discord-webhooks   |      |       discord-channels        |        |    "twitchname1": "",   |

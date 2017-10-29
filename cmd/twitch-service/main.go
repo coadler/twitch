@@ -44,6 +44,6 @@ func main() {
 	go restapi.Start(":1323")
 
 	twitchapi := twitch.NewAPI(clientid)
-	db := twitch.NewDB(twitchapi)
+	db := twitch.NewDB()
 	twitchapi.Open(db, updateinterval)
 }
