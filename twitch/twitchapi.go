@@ -50,12 +50,15 @@ type Twitch struct {
 	ClientID string
 }
 
+var API *Twitch
+
 // NewAPI ...
 func NewAPI(clientID string) *Twitch {
-	return &Twitch{
+	API = &Twitch{
 		client:   http.Client{},
 		ClientID: clientID,
 	}
+	return API
 }
 
 // RequestChannels requests a list of channels

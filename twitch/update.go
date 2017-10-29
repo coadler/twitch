@@ -19,18 +19,18 @@ func (t *Twitch) Open(twitchdb *Database, interval int64) {
 	db = twitchdb
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 
-	t.CheckForUpdates()
+	t.checkForUpdates()
 	for {
 		select {
 		case <-ticker.C:
-			t.CheckForUpdates()
+			t.checkForUpdates()
 		}
 	}
 }
 
 // CheckForUpdates checks
-func (t *Twitch) CheckForUpdates() {
-	channels, err := db.GetTwitchChannels()
+func (t *Twitch) checkForUpdates() {
+	channels, err := db.GetAllTwitchChannels()
 	if err != nil {
 		fmt.Println("Error getting channels", err.Error())
 		return
@@ -64,7 +64,7 @@ func sendChannelLive(channel *ChannelData) {
 		return
 	}
 
-	webhooks, err := db.GetWebhooks(user.Login)
+	webhooks, err := db.GetWebhooksByTwitchName(user.Login)
 	if err != nil {
 		fmt.Println("error getting webhooks:", err.Error())
 		return

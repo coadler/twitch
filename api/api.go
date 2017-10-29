@@ -57,17 +57,20 @@ func (a *API) initAPI() {
 		SigningKey: []byte(signingsecret),
 	}
 	v1.Use(middleware.JWTWithConfig(config))
-	//v1.
+	v1.GET("", checkAuth)
+	v1.GET("/webhooks/:channelid", getTwitchChannels)
+	v1.POST("/webhooks:channelid/:twitchname", addWebhook)
+	v1.DELETE("/webhooks/:channelid/:twitchname/:webhookid", deleteWebhook)
 }
 
 // tentative routes
 
 // 						UNAUTHENTICATED
-// GET 	/ 										- hello world
-// GET 	/v1/token 								- get jwt for auth
+// GET 	/ 													- hello world
+// GET 	/v1/token 											- get jwt for auth
 
 //						 AUTHENTICATED
-// GET 	/v1/api 								- check jwt validity
-// GET 	/v1/api/webhooks/:channelid				- returns a list of webhooks for a specific channel
-// POST /v1/api/webhooks/:channelid/:twitchname	- make a new webhook
-// DEL 	/v1/api/webhooks/:channelid/:twitchname	- delete a webhook
+// GET 	/v1/api 											- check jwt validity
+// GET 	/v1/api/webhooks/:channelid							- returns a list of twitch channels for a specific channel
+// POST /v1/api/webhooks/:channelid/:twitchname				- make a new webhook
+// DEL 	/v1/api/webhooks/:channelid/:twitchname/:webhookid	- delete a webhook
