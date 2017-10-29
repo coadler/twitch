@@ -59,7 +59,7 @@ func (a *API) initAPI() {
 	v1.Use(middleware.JWTWithConfig(config))
 	v1.GET("", checkAuth)
 	v1.GET("/webhooks/:channelid", getTwitchChannels)
-	v1.POST("/webhooks:channelid/:twitchname", addWebhook)
+	v1.POST("/webhooks/:channelid/:twitchname", addWebhook)
 	v1.DELETE("/webhooks/:channelid/:twitchname/:webhookid", deleteWebhook)
 }
 

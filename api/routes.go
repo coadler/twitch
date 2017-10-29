@@ -67,6 +67,10 @@ func getTwitchChannels(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	if names == nil {
+		names = []string{}
+	}
+
 	return c.JSON(http.StatusOK, echo.Map{
 		"names": names,
 	})

@@ -48,11 +48,12 @@ func (t *Twitch) checkForUpdates() {
 		}
 
 		for _, e := range res.Data {
-			if e.Type == "live" {
-				if time.Now().Sub(e.StartedAt) < (2 * time.Minute) {
-					go sendChannelLive(e)
-				}
-			}
+			//if e.Type == "live" {
+			//if time.Now().Sub(e.StartedAt) < (2 * time.Minute) {
+			fmt.Printf("%+v\n", e)
+			go sendChannelLive(e)
+			//}
+			//}
 		}
 	}
 }
@@ -70,6 +71,8 @@ func sendChannelLive(channel *ChannelData) {
 		return
 	}
 
+	fmt.Println("total webhooks:", len(webhooks))
+
 	for _, e := range webhooks {
 		go executeWebook(e, user, channel)
 	}
@@ -78,7 +81,10 @@ func sendChannelLive(channel *ChannelData) {
 func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData) {
 	data := discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
-			&discordgo.MessageEmbed{},
+			&discordgo.MessageEmbed{
+				Title:       "this is a text",
+				Description: "ha ha ha",
+			},
 		},
 	}
 

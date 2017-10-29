@@ -198,7 +198,6 @@ func (d *Database) GetAllTwitchChannels() (channels []string, err error) {
 // GetWebhooksByTwitchName returns a slice of all the webhooks for a twitch channel
 func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook, err error) {
 	var w *Webhook
-	var makeBucket bool
 
 	err = d.db.View(func(tx *bolt.Tx) error {
 		// get bucket containing all the webhooks for a twitch channel
@@ -206,7 +205,7 @@ func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook,
 		if h := b.Bucket(bt(twitchName)); h != nil {
 			// iterate over all the keys stored in the bucket, and append
 			// to a slice of webhooks to be returned
-			err = b.ForEach(func(k, v []byte) error {
+			err = h.ForEach(func(k, v []byte) error {
 				// parse json byte slice -> webhook struct
 				err = json.Unmarshal(v, &w)
 				if err != nil {
@@ -215,20 +214,9 @@ func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook,
 				hooks = append(hooks, w)
 				return nil
 			})
-		} else {
-			makeBucket = true
 		}
-		return nil
-	})
-	// return if the bucket wasn't nil
-	if !makeBucket || err != nil {
-		return
-	}
 
-	err = d.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(bt("discord-webhooks"))
-		_, err = b.CreateBucketIfNotExists(bt(twitchName))
-		return err
+		return nil
 	})
 
 	return
