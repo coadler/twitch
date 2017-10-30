@@ -98,7 +98,7 @@ func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData, game 
 				Author: &discordgo.MessageEmbedAuthor{
 					URL:     "https://twitch.tv",
 					Name:    "Twitch",
-					IconURL: "https://seeklogo.com/images/T/twitch-tv-logo-51C922E0F0-seeklogo.com.png",
+					IconURL: "https://cdn.discordapp.com/attachments/272212345340690443/374388819643858955/twitch11.png",
 				},
 				Image: &discordgo.MessageEmbedImage{
 					URL:    strings.Replace(strings.Replace(channel.ThumbnailURL, "{width}", "1280", -1), "{height}", "720", -1),
