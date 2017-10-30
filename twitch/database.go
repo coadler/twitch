@@ -197,8 +197,6 @@ func (d *Database) GetAllTwitchChannels() (channels []string, err error) {
 
 // GetWebhooksByTwitchName returns a slice of all the webhooks for a twitch channel
 func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook, err error) {
-	var w *Webhook
-
 	err = d.db.View(func(tx *bolt.Tx) error {
 		// get bucket containing all the webhooks for a twitch channel
 		b := tx.Bucket(bt("discord-webhooks"))
@@ -206,12 +204,8 @@ func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook,
 			// iterate over all the keys stored in the bucket, and append
 			// to a slice of webhooks to be returned
 			err = h.ForEach(func(k, v []byte) error {
-				// parse json byte slice -> webhook struct
-				err = json.Unmarshal(v, &w)
-				if err != nil {
-					return err
-				}
-				hooks = append(hooks, w)
+				// append webhook to slice
+				hooks = append(hooks, &Webhook{string(k), string(v)})
 				return nil
 			})
 		}
@@ -260,10 +254,57 @@ func (d *Database) GetUserByID(id string) (userData *UserData, err error) {
 			}
 			return u.Put(bt(id), raw)
 		})
+
 		return
 	}
 
 	err = json.Unmarshal(user, userData)
+	return
+}
+
+// GetGameByID returns a twitch game by it's ID
+// it tries to see if the game is cached and if
+// not calls the twitch api and caches response
+func (d *Database) GetGameByID(id string) (gameData *GameData, err error) {
+	var game []byte
+	err = d.db.View(func(tx *bolt.Tx) error {
+		// guaranteed to exist
+		twitchBucket := tx.Bucket(bt("twitch-channels"))
+		// not guaranteed
+		if gameBucket := twitchBucket.Bucket(bt("game-data")); gameBucket != nil {
+			copy(game, gameBucket.Get(bt(id)))
+		}
+		return nil
+	})
+	if err != nil {
+		return
+	}
+
+	if game == nil {
+		gameData, err = API.GetGameByID(id)
+		if err != nil {
+			return
+		}
+
+		var raw []byte
+		raw, err = json.Marshal(gameData)
+		if err != nil {
+			return
+		}
+
+		err = d.db.Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket(bt("twitch-channels"))
+			u, err := b.CreateBucketIfNotExists(bt("game-data"))
+			if err != nil {
+				return err
+			}
+			return u.Put(bt(id), raw)
+		})
+
+		return
+	}
+
+	err = json.Unmarshal(game, gameData)
 	return
 }
 

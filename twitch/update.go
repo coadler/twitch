@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	humanize "github.com/dustin/go-humanize"
 )
 
 var db *Database
@@ -65,6 +68,12 @@ func sendChannelLive(channel *ChannelData) {
 		return
 	}
 
+	game, err := db.GetGameByID(channel.GameID)
+	if err != nil {
+		fmt.Println("error getting game by id:", err.Error())
+		return
+	}
+
 	webhooks, err := db.GetWebhooksByTwitchName(user.Login)
 	if err != nil {
 		fmt.Println("error getting webhooks:", err.Error())
@@ -74,16 +83,46 @@ func sendChannelLive(channel *ChannelData) {
 	fmt.Println("total webhooks:", len(webhooks))
 
 	for _, e := range webhooks {
-		go executeWebook(e, user, channel)
+		go executeWebook(e, user, channel, game)
 	}
 }
 
-func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData) {
+func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData, game *GameData) {
 	data := discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
 			&discordgo.MessageEmbed{
-				Title:       "this is a text",
-				Description: "ha ha ha",
+				URL:         "https://twitch.tv/" + user.Login,
+				Title:       user.Login + " just went live",
+				Description: channel.Title,
+				Author: &discordgo.MessageEmbedAuthor{
+					URL:     "https://twitch.tv",
+					Name:    "Twitch",
+					IconURL: "https://seeklogo.com/images/T/twitch-tv-logo-51C922E0F0-seeklogo.com.png",
+				},
+				Image: &discordgo.MessageEmbedImage{
+					URL:    strings.Replace(strings.Replace(channel.ThumbnailURL, "{width}", "1280", -1), "{height}", "720", -1),
+					Width:  1280,
+					Height: 720,
+				},
+				Thumbnail: &discordgo.MessageEmbedThumbnail{
+					URL: user.ProfileImageURL,
+				},
+				Timestamp: channel.StartedAt.Format(time.RFC3339),
+				Fields: []*discordgo.MessageEmbedField{
+					&discordgo.MessageEmbedField{
+						Name:   "Viewers",
+						Value:  strconv.Itoa(channel.ViewerCount),
+						Inline: true,
+					},
+					&discordgo.MessageEmbedField{
+						Name:   "Game",
+						Value:  game.Name,
+						Inline: true,
+					},
+				},
+				Footer: &discordgo.MessageEmbedFooter{
+					Text: "Live " + humanize.Time(channel.StartedAt),
+				},
 			},
 		},
 	}
@@ -98,6 +137,7 @@ func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData) {
 		fmt.Println("unable to make webhook request:", err.Error())
 		return
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -106,7 +146,7 @@ func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData) {
 	}
 
 	switch res.StatusCode {
-	case http.StatusOK:
+	case http.StatusNoContent:
 		fmt.Println("webhook req success")
 	default:
 		fmt.Println("webhook req didnt respond OK, responded", res.Status)

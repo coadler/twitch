@@ -3,6 +3,7 @@ package twitch
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -42,6 +43,18 @@ type UserData struct {
 // UsersResponse is the data structure for the twitch users endpoint
 type UsersResponse struct {
 	Data []*UserData `json:"data"`
+}
+
+// GameData holds info about a specific game
+type GameData struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	BoxArtURL string `json:"box_art_url"`
+}
+
+// GamesResponse is the data structure for the twitch games endpoint
+type GamesResponse struct {
+	Data []*GameData `json:"data"`
 }
 
 // Twitch is the struct that holds the basic info for the package
@@ -85,6 +98,31 @@ func (t *Twitch) GetUserByID(id string) (*UserData, error) {
 	}
 
 	return user.Data[0], nil
+}
+
+func gamesEndpoint(id string) string {
+	return "https://api.twitch.tv/helix/games?id=" + id
+}
+
+// GetGameByID ...
+func (t *Twitch) GetGameByID(id string) (*GameData, error) {
+	game := new(GamesResponse)
+	err := t.request("GET", gamesEndpoint(id), game)
+	if err != nil {
+		return nil, err
+	}
+
+	if game == nil {
+		fmt.Println("no game data returned for game", id)
+		return &GameData{"undefined", "undefined", "undefined"}, nil
+	}
+
+	if len(game.Data) < 1 {
+		fmt.Println("no game data returned for game", id)
+		return &GameData{"undefined", "undefined", "undefined"}, nil
+	}
+
+	return game.Data[0], nil
 }
 
 func (t *Twitch) request(method, url string, model interface{}) error {
