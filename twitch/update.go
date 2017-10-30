@@ -15,12 +15,14 @@ import (
 
 var db *Database
 var client = http.Client{}
+var updateInterval time.Duration
 
 // Open ...
 func (t *Twitch) Open(twitchdb *Database, interval int64) {
 	fmt.Println("open")
 	db = twitchdb
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	updateInterval = time.Duration(interval) * time.Second
+	ticker := time.NewTicker(updateInterval)
 
 	t.checkForUpdates()
 	for {
@@ -51,12 +53,11 @@ func (t *Twitch) checkForUpdates() {
 		}
 
 		for _, e := range res.Data {
-			//if e.Type == "live" {
-			//if time.Now().Sub(e.StartedAt) < (2 * time.Minute) {
-			fmt.Printf("%+v\n", e)
-			go sendChannelLive(e)
-			//}
-			//}
+			if e.Type == "live" {
+				if time.Now().Sub(e.StartedAt) < (updateInterval) {
+					go sendChannelLive(e)
+				}
+			}
 		}
 	}
 }
