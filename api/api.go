@@ -65,12 +65,12 @@ func (a *API) initAPI() {
 
 // tentative routes
 
-// 						UNAUTHENTICATED
-// GET 	/ 													- hello world
-// GET 	/v1/token 											- get jwt for auth
+//                      UNAUTHENTICATED
+// GET 	/                                                   - hello world
+// GET 	/v1/token                                           - get jwt for auth
 
-//						 AUTHENTICATED
-// GET 	/v1/api 											- check jwt validity
-// GET 	/v1/api/webhooks/:channelid							- returns a list of twitch channels for a specific channel
-// POST /v1/api/webhooks/:channelid/:twitchname				- make a new webhook
-// DEL 	/v1/api/webhooks/:channelid/:twitchname/:webhookid	- delete a webhook
+//                       AUTHENTICATED
+// GET 	/v1/api                                             - check jwt validity
+// GET 	/v1/api/webhooks/:channelid                         - returns a list of twitch channels for a specific channel
+// POST /v1/api/webhooks/:channelid/:twitchname             - make a new webhook
+// DEL 	/v1/api/webhooks/:channelid/:twitchname/:webhookid  - delete a webhook
