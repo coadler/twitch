@@ -67,7 +67,7 @@ func (a *API) initAPI() {
 
 //                      UNAUTHENTICATED
 // GET 	/                                                   - hello world
-// GET 	/v1/token                                           - get jwt for auth
+// POST /v1/token                                           - get jwt for auth
 
 //                       AUTHENTICATED
 // GET 	/v1/api                                             - check jwt validity
