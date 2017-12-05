@@ -26,3 +26,4 @@ _testmain.go
 cmd/twitch-service/config.json
 cmd/twitch-service/twitch-service
 cmd/twitch-service/twitch.db
+.vscode/settings.json
