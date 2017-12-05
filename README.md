@@ -125,7 +125,7 @@ Note: the URLs provided assume you are running this on your local machine
 
     First, when the user calls the remove command, we need to make a call to get all the Twitch channels currently active in the Discord channel in question
 
-    Send a`POST` request to `http://127.0.0.1:1323/v1/api/webhooks/:channelid` where `:channelid` is the Discord channel ID
+    Send a `GET` request to `http://127.0.0.1:1323/v1/api/webhooks/:channelid` where `:channelid` is the Discord channel ID
 
     You'll receive back:
 
