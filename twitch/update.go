@@ -149,6 +149,10 @@ func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData, game 
 	switch res.StatusCode {
 	case http.StatusNoContent:
 		fmt.Println("webhook req success")
+	case http.StatusNotFound:
+		fmt.Println("webhook 404'd. fixing...")
+		go db.webhook404(webhook)
+
 	default:
 		fmt.Println("webhook req didnt respond OK, responded", res.Status)
 	}

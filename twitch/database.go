@@ -1,7 +1,9 @@
 package twitch
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -17,8 +19,9 @@ type Database struct {
 
 // Webhook stores the data of a single webhook
 type Webhook struct {
-	ID    string `json:"id"`
-	Token string `json:"token"`
+	Channel string `json:"channel"` // discord channel id
+	ID      string `json:"id"`      // webhook id
+	Token   string `json:"token"`   // webhook token
 }
 
 var (
@@ -72,7 +75,7 @@ func (d *Database) AddChannel(twitchName, channel string, hook *Webhook) (err er
 		}
 
 		// put the webhook data in the bucket
-		return n.Put(bt(hook.ID), bt(hook.Token))
+		return n.Put(bt(channel), bt(hook.ID+":"+hook.Token))
 	})
 	if err != nil {
 		return
@@ -169,6 +172,9 @@ func (d *Database) DeleteWebhook(twitchName, wID, cID string) (err error) {
 func (d *Database) incrementKey(b *bolt.Bucket, key []byte, amt int) error {
 	toInc := b.Get(key)
 	if toInc == nil {
+		if amt < 1 {
+			return nil
+		}
 		return b.Put(key, bt(strconv.Itoa(amt)))
 	}
 
@@ -178,6 +184,9 @@ func (d *Database) incrementKey(b *bolt.Bucket, key []byte, amt int) error {
 	}
 
 	cur += amt
+	if cur == 0 {
+		return b.Delete(key)
+	}
 	return b.Put(key, bt(strconv.Itoa(cur)))
 }
 
@@ -205,7 +214,11 @@ func (d *Database) GetWebhooksByTwitchName(twitchName string) (hooks []*Webhook,
 			// to a slice of webhooks to be returned
 			err = h.ForEach(func(k, v []byte) error {
 				// append webhook to slice
-				hooks = append(hooks, &Webhook{string(k), string(v)})
+				webhook := bytes.Split(v, bt(":"))
+				if len(webhook) != 2 {
+					return errors.New("incorrect webhook value")
+				}
+				hooks = append(hooks, &Webhook{string(k), string(webhook[0]), string(webhook[1])})
 				return nil
 			})
 		}
@@ -323,6 +336,36 @@ func (d *Database) GetTwitchNamesByChannel(cID string) (names []string, err erro
 				names = append(names, i)
 			}
 		}
+		return nil
+	})
+
+	return
+}
+
+func (d *Database) webhook404(hook *Webhook) (err error) {
+	err = d.db.Update(func(tx *bolt.Tx) error {
+		var err error
+		discord := tx.Bucket(bt("discord-channels"))
+		raw := discord.Get(bt(hook.Channel))
+		err = discord.Delete(bt(hook.Channel))
+		if err != nil {
+			return err
+		}
+
+		twitchChannels := map[string]string{}
+		err = json.Unmarshal(raw, &twitchChannels)
+		if err != nil {
+			return err
+		}
+
+		twitch := tx.Bucket(bt("twitch-channels"))
+		for i := range twitchChannels {
+			err = d.incrementKey(twitch, bt(i), -1)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 
