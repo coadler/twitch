@@ -74,7 +74,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3O
 #### Overview
 Start tracking a certain twitch channel.
 
-**Note:** When tracking a new Twitch channel you should always check to see if there is already a webhook you created for that Discord channel, and if not create one to supply in the request body. Take a look at the section ["Getting info about a discord channel"]() bellow to know how to get the current webhook for a certain discord channel.
+**Note:** When tracking a new Twitch channel you should always check to see if there is already a webhook you created for that Discord channel, and if not create one to supply in the request body. Take a look at the section ["Getting info about a discord channel"](#getting-info-about-a-discord-channel) bellow to know how to get the current webhook for a certain discord channel.
 
 You should __**NEVER**__ have two different webhooks for a given Discord channel because this screws with how the API tracks things internally.
 
