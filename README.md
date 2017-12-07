@@ -27,6 +27,8 @@ Personally I think option 1 should work the best, because if someone is deleting
 
 Well I'm glad you asked. If you want a step by step guide on getting started [check the wiki](https://github.com/ThyLeader/twitch-service/wiki).
 
+## Routes
+
 **Note:** the URLs provided assume you are running this on your local machine.
 
 ### Getting a token
@@ -34,11 +36,12 @@ Well I'm glad you asked. If you want a step by step guide on getting started [ch
 #### `POST` `http://127.0.0.1:1323/v1/token`
 
 #### Overview
+
 Get an auth token issued to you.
 
 **Note:** Tokens expire after a certain amount of time (changeable in the config).
 
-##### Request Body:
+##### Request Body
 
 ```json
 {
@@ -48,7 +51,7 @@ Get an auth token issued to you.
 }
 ```
 
-##### Response:
+##### Response
 
 A JSON object containing the auth token under a `token` key.
 
@@ -58,7 +61,7 @@ A JSON object containing the auth token under a `token` key.
 }
 ```
 
-#### All protected routes require a `Authorization` header:
+#### All protected routes require a `Authorization` header
 
 ```Header
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
@@ -68,8 +71,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3O
 
 #### `POST` `http://127.0.0.1:1323/v1/api/:channelid/:twitchname`
 
-- `:channelid` is the Discord channel the user wants notifications to go in
-- `:twitchname` is the name of the Twitch channel the user wants updates for
+* `:channelid` is the Discord channel the user wants notifications to go in
+* `:twitchname` is the name of the Twitch channel the user wants updates for
 
 #### Overview
 Start tracking a certain twitch channel.
@@ -78,7 +81,7 @@ Start tracking a certain twitch channel.
 
 You should __**NEVER**__ have two different webhooks for a given Discord channel because this screws with how the API tracks things internally.
 
-##### Request Body:
+##### Request Body
 
 ```json
 {
@@ -87,7 +90,7 @@ You should __**NEVER**__ have two different webhooks for a given Discord channel
 }
 ```
 
-##### Response:
+##### Response
 
 ...
 
@@ -95,18 +98,18 @@ You should __**NEVER**__ have two different webhooks for a given Discord channel
 
 #### `DELETE` `http://127.0.0.1:1323/v1/api/webhooks/:channelid/:twitchname/:webhookid`
 
-- `:channelid` is the Discord channel ID
-- `:twitchname` is the Twitch name that's being deleted
-- `:webhook` is the webhook ID that is used for the Discord channel
+* `:channelid` is the Discord channel ID
+* `:twitchname` is the Twitch name that's being deleted
+* `:webhook` is the webhook ID that is used for the Discord channel
 
 #### Overview
 Stop tracking a certain twitch channel.
 
-##### Request Body:
+##### Request Body
 
 ...
 
-##### Response:
+##### Response
 
 ...
 
@@ -114,21 +117,21 @@ Stop tracking a certain twitch channel.
 
 #### `GET` `http://127.0.0.1:1323/v1/api/webhooks/:channelid`
 
-- `:channelid` is the Discord channel ID
+* `:channelid` is the Discord channel ID
 
 #### Overview
 Get info about a certain discord channel. It returns a list of all Twitch channels being tracked and the current webhook used in that channel.
 
-##### Request Body:
+##### Request Body
 
 ...
 
-##### Response:
+##### Response
 
 A JSON object containing two keys:
 
-- `names` is an array of Twitch channel names being tracked (or empty array if no channels are being tracked)
-- `webhook` is the current webhook used for that channel
+* `names` is an array of Twitch channel names being tracked (or empty array if no channels are being tracked)
+* `webhook` is the current webhook used for that channel
 
 ```json
 {
