@@ -61,6 +61,8 @@ type GamesResponse struct {
 type Twitch struct {
 	client   http.Client
 	ClientID string
+
+	live map[string]string
 }
 
 var API *Twitch
@@ -70,6 +72,7 @@ func NewAPI(clientID string) *Twitch {
 	API = &Twitch{
 		client:   http.Client{},
 		ClientID: clientID,
+		live:     map[string]string{},
 	}
 	return API
 }

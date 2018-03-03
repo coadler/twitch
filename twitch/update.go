@@ -40,6 +40,7 @@ func (t *Twitch) checkForUpdates() {
 		fmt.Println("Error getting channels", err.Error())
 		return
 	}
+	liveCopy := copyMap(t.live)
 
 	for len(channels) > 100 {
 		res, err := t.RequestChannels(channels[:100])
@@ -49,10 +50,11 @@ func (t *Twitch) checkForUpdates() {
 		}
 
 		for _, e := range res.Data {
-			if e.Type == "live" {
-				if time.Now().Sub(e.StartedAt) < (updateInterval) {
-					go sendChannelLive(e)
-				}
+			if _, ok := t.live[e.ID]; !ok {
+				t.live[e.ID] = ""
+				go sendChannelLive(e)
+			} else {
+				delete(liveCopy, e.ID)
 			}
 		}
 
@@ -66,12 +68,27 @@ func (t *Twitch) checkForUpdates() {
 	}
 
 	for _, e := range res.Data {
-		if e.Type == "live" {
-			if time.Now().Sub(e.StartedAt) < (updateInterval) {
-				go sendChannelLive(e)
-			}
+		if _, ok := t.live[e.ID]; !ok {
+			t.live[e.ID] = ""
+			go sendChannelLive(e)
+		} else {
+			delete(liveCopy, e.ID)
 		}
 	}
+
+	for i := range liveCopy {
+		delete(t.live, i)
+	}
+}
+
+func copyMap(src map[string]string) map[string]string {
+	dst := map[string]string{}
+
+	for k, v := range src {
+		dst[k] = v
+	}
+
+	return dst
 }
 
 func sendChannelLive(channel *ChannelData) {
@@ -138,6 +155,8 @@ func executeWebook(webhook *Webhook, user *UserData, channel *ChannelData, game 
 				},
 			},
 		},
+		Username:  "Twitch",
+		AvatarURL: "https://cdn.discordapp.com/attachments/196118375485669376/419336810431250432/glitch_474x356.png",
 	}
 
 	raw, err := json.Marshal(data)
