@@ -96,7 +96,7 @@ func (d *Database) AddChannel(twitchName, channel string, hook *Webhook) (err er
 			return
 		}
 
-		names[channel] = ""
+		names[twitchName] = ""
 		raw, err = json.Marshal(names)
 		if err != nil {
 			return
