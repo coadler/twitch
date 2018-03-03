@@ -41,12 +41,8 @@ func (t *Twitch) checkForUpdates() {
 		return
 	}
 
-	if len(channels) < 100 {
-		if len(channels) < 1 {
-			fmt.Println("channel list empty")
-			return
-		}
-		res, err := t.RequestChannels(channels)
+	for len(channels) > 100 {
+		res, err := t.RequestChannels(channels[:100])
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -57,6 +53,22 @@ func (t *Twitch) checkForUpdates() {
 				if time.Now().Sub(e.StartedAt) < (updateInterval) {
 					go sendChannelLive(e)
 				}
+			}
+		}
+
+		channels = channels[100:]
+	}
+
+	res, err := t.RequestChannels(channels)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	for _, e := range res.Data {
+		if e.Type == "live" {
+			if time.Now().Sub(e.StartedAt) < (updateInterval) {
+				go sendChannelLive(e)
 			}
 		}
 	}
