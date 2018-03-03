@@ -125,10 +125,10 @@ func (d *Database) AddChannel(twitchName, channel string, hook *Webhook) (err er
 func (d *Database) DeleteWebhook(twitchName, wID, cID string) (err error) {
 	rawNames := []byte{}
 	err = d.db.Update(func(tx *bolt.Tx) error {
-		err = d.incrementKey(tx.Bucket(bt("twitch-channels")), bt(twitchName), -1)
-		if err != nil {
-			return err
-		}
+		// err = d.incrementKey(tx.Bucket(bt("twitch-channels")), bt(twitchName), -1)
+		// if err != nil {
+		// 	return err
+		// }
 
 		b := tx.Bucket(bt("discord-webhooks"))
 		b = b.Bucket(bt(twitchName))
@@ -358,13 +358,13 @@ func (d *Database) webhook404(hook *Webhook) (err error) {
 			return err
 		}
 
-		twitch := tx.Bucket(bt("twitch-channels"))
-		for i := range twitchChannels {
-			err = d.incrementKey(twitch, bt(i), -1)
-			if err != nil {
-				return err
-			}
-		}
+		// twitch := tx.Bucket(bt("twitch-channels"))
+		// for i := range twitchChannels {
+		// 	err = d.incrementKey(twitch, bt(i), -1)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
 
 		return nil
 	})
