@@ -10,6 +10,8 @@
 
 * Powered by [Postgres](https://www.postgresql.org/), [GRPC](https://grpc.io/)/[Protobuf](https://developers.google.com/protocol-buffers/), and [Go](https://golang.org).
 
+* I'm currently in the process of completely rewriting this, so it won't be in any sort of a usable state for a while.
+
 ## what is it useful for
 
 This was designed for [Tatsumaki](https://tatsumaki.xyz), which is a Discord bot serving over 700,000 Discord servers. 
