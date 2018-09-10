@@ -1,0 +1,32 @@
+            +----------------------------------------------------------------+
+            |                                                                |                      we use a map here since map lookups
+            |                                                                |                            are faster than arrays
+            |                    +----------------------+      +-------------+-----------------+        +-------------------------+
+            |                    |       Bucket         |      |           Bucket              |        |  {                      |
+     +------+------+             |   discord-webhooks   |      |       discord-channels        |        |    "twitchname1": "",   |
+     |             |             |                      |      |                               |        |    "twitchname2": "",   |
+     |   Main DB   +-------------+   contains buckets   |      |  contains keys by channel id  |        |    "twitchname3": "",   |
+     |             |             |   separated by       |      |  that contain json data about |        |    "twitchname4": "",   |
+     +------+------+             |   twitch name        |      |  that channel                 |        |    "twitchname5": "",   |
+            |                    |   that contain all   |      |                               |        |    "twitchname6": ""    |
+            |                    |   the webhooks for   |      |  keys:   discord channel id   |        |  }                      |
+            |                    |   a given twitch     |      |  values: json encoded data    +--------+-------------------------+
+            |                    |   channel            |      |                               |
+            |                    |                      |      +-------------------------------+
+            |                    +----------+-----------+
++-----------+-----------+                   |
+|        Bucket         |                   |
+|    twitch-channels    |           +-------+--------+
+|                       |           |     Bucket     |
+|   contains a non-     |           |   twitchname   |
+|   repeating list of   |           |                |
+|   every twitch chan-  |           | list of all    |
+|   nel being tracked   |           | webhooks for   |
+|                       |           | a given twitch |
+|   keys:   twitch name |           | channel        |
+|   values: total       |           |                |
+|           channels    |           | keys:   id     |
++-----------------------+           | values: token  |
+                                    |                |
+                                    |                |
+                                    +----------------+
