@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ThyLeader/twitch-service)](https://goreportcard.com/report/github.com/ThyLeader/twitch-service) 
 [![Discord](https://discordapp.com/api/guilds/173184118492889089/widget.png)](https://discord.gg/tatsumaki) 
 [![Discord](https://img.shields.io/badge/Discord-thy%230001-blue.svg)](https://discord.gg/tatsumaki)
+[![Build Status](https://travis-ci.org/coadler/twitch.svg?branch=develop)](https://travis-ci.org/coadler/twitch)
 
 ## what is this thing
 
