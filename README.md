@@ -1,27 +1,36 @@
-# twitch-service
+# twitch
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/ThyLeader/twitch-service)](https://goreportcard.com/report/github.com/ThyLeader/twitch-service) [![Discord](https://discordapp.com/api/guilds/173184118492889089/widget.png)](https://discord.gg/tatsumaki) [![Discord](https://img.shields.io/badge/Discord-thy%238914-blue.svg)](https://discord.gg/tatsumaki)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ThyLeader/twitch-service)](https://goreportcard.com/report/github.com/ThyLeader/twitch-service) 
+[![Discord](https://discordapp.com/api/guilds/173184118492889089/widget.png)](https://discord.gg/tatsumaki) 
+[![Discord](https://img.shields.io/badge/Discord-thy%230001-blue.svg)](https://discord.gg/tatsumaki)
 
 ## what is this thing
 
-* This is an external service meant for keeping track of [Twitch](https://twitch.tv) channels and sending webhooks to [Discord](https://discordapp.com) when they go live
+* This is an external service meant for keeping track of [Twitch](https://twitch.tv) channels and sending webhooks to [Discord](https://discordapp.com) when they go live.
 
-* The API endpoints are protected with [JSON Web Tokens](https://jwt.io) which allow multiple bots to use the same instance while never sharing their scope and providing useful logging
-
-* **100% self contained**. Meaning no databases to run, automatic TLS from [letsencrypt](https://letsencrypt.org/), and no downloading dependencies. Simply download the provided binary for your OS (when I get around to doing them), fill in the example config and you're ready for production
+* Powered by [Postgres](https://www.postgresql.org/), [GRPC](https://grpc.io/)/[Protobuf](https://developers.google.com/protocol-buffers/), and [Go](https://golang.org).
 
 ## what is it useful for
 
-This was designed for [Tatsumaki](https://tatsumaki.xyz), which is a Discord bot serving over 300,000 Discord servers. Meaning, we have over 200 different processes that each handle around ~1500 guilds. If each process handled this separately, it would be a mess. This microservice provides and easy to use API with support for sharding and support for multiple bots using JWT custom claims
+This was designed for [Tatsumaki](https://tatsumaki.xyz), which is a Discord bot serving over 700,000 Discord servers. 
+Meaning, we have over 300 different processes that each handle around ~1500 guilds. If each process handled this separately, it would be a mess. 
+This microservice provides and easy to use API with support for sharding and support for multiple bots using JWT custom claims
 
-Additionally, it's use of webhooks requires no authentication to send messages. With the webhook ID and token messages can be sent without authentication from the main bot (aka without the bot's token)
+Additionally, the API's use of webhooks requires no authentication to send messages. 
+With the webhook ID and token messages can be sent without authentication from the main bot (aka without the bot's token).
 
-The only caveat in this solution is that the bot must have the ability to make webhooks for the channel receiving updates, and also must monitor for webhooks being deleted and notify the API of changes. If a webhook is deleted, the bot should check the API to see if any active twitch channels are in that channel and notify how you see fit. In my eyes this can be done a few ways:
+The only caveat in this solution is that the bot must have the ability to make webhooks for the channel receiving updates,
+and also must monitor for webhooks being deleted and notify the API of changes. If a webhook is deleted, 
+the bot should check the API to see if any active twitch channels are in that channel and notify how you see fit. 
+In my eyes this can be done a few ways:
 
-1. Notifying the Discord channel that had the webhook was deleted and twitch channels have stopped tracking, then on the backend deleting the Discord channel from the db
-1. Readding the webhook and notifying the Discord channel that they must remove all Twitch channel tracking before deleting the webhook, then on the backend updating each of webhook IDs and tokens to the new webhook
+1. Notifying the Discord channel that had the webhook was deleted and twitch channels have stopped tracking, 
+then on the backend deleting the Discord channel from the db
+1. Readding the webhook and notifying the Discord channel that they must remove all Twitch channel tracking before deleting the webhook, 
+then on the backend updating each of webhook IDs and tokens to the new webhook
 
-Personally I think option 1 should work the best, because if someone is deleting the webhook they either want the updates to stop or are stupid enough to delete something which they don't understand. Either way they deserve everything to get deleted.
+Personally I think option 1 should work the best, because if someone is deleting the webhook they either want the updates to stop 
+or are stupid enough to delete something which they don't understand. Either way they deserve everything to get deleted.
 
 ## how do I make this thing work??!?
 
