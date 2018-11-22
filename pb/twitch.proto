@@ -6,7 +6,7 @@ service Twitch {
 
 	rpc NewWebhook(NewWebhookRequest) returns (NewWebhookResponse) {}
 
-	rpc DeleteWebook(DeleteWebhookRequest) returns (DeleteWebhookResponse) {}
+	rpc DeleteWebhook(DeleteWebhookRequest) returns (DeleteWebhookResponse) {}
 }
 
 message GetChannelsRequest {

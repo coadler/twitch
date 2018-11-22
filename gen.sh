@@ -6,9 +6,7 @@ popd () { command popd "$@" > /dev/null ; }
 
 echo "Generating models..."
 pushd internal/models
-    # without removing the templates first, xo_db.go.go will never be regenerated
-    rm -rf *.xo.go
-    xo pgsql://colin@127.0.0.1/twitch?sslmode=disable -o . --template-path templates/
+    gnorm gen
 
     pushd schema
         pg_dump -h localhost \

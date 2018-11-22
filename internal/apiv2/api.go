@@ -18,6 +18,6 @@ func (t *twitch) NewWebhook(context.Context, *pb.NewWebhookRequest) (*pb.NewWebh
 	panic("not implemented")
 }
 
-func (t *twitch) DeleteWebook(context.Context, *pb.DeleteWebhookRequest) (*pb.DeleteWebhookResponse, error) {
+func (t *twitch) DeleteWebhook(context.Context, *pb.DeleteWebhookRequest) (*pb.DeleteWebhookResponse, error) {
 	panic("not implemented")
 }
