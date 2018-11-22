@@ -1,0 +1,68 @@
+ConnStr = "dbname=twitch host=127.0.0.1 sslmode=disable user=colinadler"
+
+DBType = "postgres"
+
+Schemas = ["public","product_catalog"]
+
+PostRun = ["goimports", "-w", "$GNORMFILE"]
+
+NameConversion = "{{pascal .}}"
+
+OutputDir = "."
+
+ExcludeTables = ["schema_version"]
+
+PluginDirs = ["./templates/plugin"]
+
+[Params]
+RootPkg = "models"
+
+RootImport = "github.com/coadler/twitch/internal/models"
+
+[SchemaPaths]
+"fields.go" = "templates/fields.gotmpl"
+"db.go" = "templates/db.gotmpl"
+
+[TablePaths]
+"{{toLower .Table}}/{{toLower .Table}}.go" = "templates/table.gotmpl"
+
+[EnumPaths]
+"enum/{{toLower .Enum}}.go" = "templates/enum.gotmpl"
+
+[TypeMap]
+"timestamp without time zone" = "time.Time"
+"timestamp with time zone" = "time.Time"
+"timestamptz" = "time.Time"
+"varchar" = "string"
+"text" = "string"
+"boolean" = "bool"
+# from "github.com/gofrs/go.uuid"
+"uuid" = "uuid.UUID"
+"character varying" = "string"
+"character" = "string"
+"smallint" = "int"
+"integer" = "int"
+"int4" = "int32"
+"int8" = "int64"
+"numeric" = "float64"
+"bigint" = "int64"
+# from "github.com/lib/pq/hstore"
+"hstore" = "hstore.Hstore"
+# note that the package name here has to be kept in sync with the RootPkg above.
+"jsonb" = "models.Jsonb"
+# the package name here needs to be kept in sync with the enum template's package name
+"bytea" = "models.Bytea"
+"book_type" = "enum.BookType"
+
+[NullableTypeMap]
+"timestamp with time zone" = "pq.NullTime"
+"text" = "sql.NullString"
+"boolean" = "sql.NullBool"
+"uuid" = "uuid.NullUUID"
+"character varying" = "sql.NullString"
+"character" = "sql.NullString"
+"integer" = "sql.NullInt64"
+"numeric" = "sql.NullFloat64"
+"hstore" = "hstore.Hstore"
+# note that the package name here has to be kept in sync with the RootPkg above.
+"jsonb" = "models.Jsonb"

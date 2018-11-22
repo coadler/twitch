@@ -1,0 +1,36 @@
+syntax = "proto3";
+package twitch;
+option go_package = "pb";
+service Twitch {
+	rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
+
+	rpc NewWebhook(NewWebhookRequest) returns (NewWebhookResponse) {}
+
+	rpc DeleteWebook(DeleteWebhookRequest) returns (DeleteWebhookResponse) {}
+}
+
+message GetChannelsRequest {
+	string id = 1;
+}
+
+message GetChannelsResponse {
+	repeated string name = 1;
+}
+
+message NewWebhookRequest {
+	// discord channel id
+	string channel = 1;
+	// twitch username
+	string twitchname = 2;
+}
+
+message NewWebhookResponse {}
+
+message DeleteWebhookRequest {
+	// discord channel id
+	string channel = 1;
+	// twitch username
+	string twitchname = 2;
+}
+
+message DeleteWebhookResponse {}
